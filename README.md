@@ -47,7 +47,7 @@ authenticates silently in the background.
 ## Install
 
 ```bash
-omarchy plugin add https://github.com/Hylkw213/omaclaude-accounts.git --enable
+omarchy plugin add https://github.com/Hylkw213/omaclaude-swap.git --enable
 ```
 
 Or clone manually into `~/.config/omarchy/plugins/cswap.accounts/`. Editing
