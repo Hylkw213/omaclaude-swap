@@ -32,10 +32,11 @@ def find_cswap_binary() -> Path | None:
     return None
 
 
-def fetch_cswap_list() -> tuple[dict | None, str]:
+def fetch_cswap_list() -> tuple[dict | None, str, bool]:
+    """Returns (data, error, cswap_missing)."""
     cswap = find_cswap_binary()
     if not cswap:
-        return None, "cswap not found. Install: uv tool install claude-swap"
+        return None, "cswap not found", True
 
     try:
         result = subprocess.run(
@@ -45,12 +46,12 @@ def fetch_cswap_list() -> tuple[dict | None, str]:
             timeout=10,
         )
         if result.returncode != 0:
-            return None, "cswap list failed"
-        return json.loads(result.stdout), ""
+            return None, "cswap list failed", False
+        return json.loads(result.stdout), "", False
     except subprocess.TimeoutExpired:
-        return None, "cswap list timed out"
+        return None, "cswap list timed out", False
     except (json.JSONDecodeError, FileNotFoundError):
-        return None, "cswap list returned unreadable output"
+        return None, "cswap list returned unreadable output", False
 
 
 def normalize_percent(pct: float) -> float:
@@ -75,9 +76,9 @@ def build_account(account: dict) -> dict:
 
 
 def main() -> int:
-    data, error = fetch_cswap_list()
+    data, error, cswap_missing = fetch_cswap_list()
     if not data:
-        print(json.dumps({"accounts": [], "error": error}))
+        print(json.dumps({"accounts": [], "error": error, "cswapMissing": cswap_missing}))
         return 0
 
     accounts = [build_account(a) for a in data.get("accounts", [])]

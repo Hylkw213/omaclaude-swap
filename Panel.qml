@@ -27,6 +27,8 @@ Panel {
   property var accounts: []
   property bool hasLoaded: false
   property string loadError: ""
+  property bool cswapMissing: false
+  property bool installingCswap: false
   property bool switchingAccount: false
   property string switchingTarget: ""
   property string switchError: ""
@@ -68,6 +70,16 @@ Panel {
 
   function refreshNow() {
     if (!listProcess.running) listProcess.running = true
+  }
+
+  // Opens a terminal running the install command, same pattern OmaProton VPN
+  // uses for its missing-CLI state — the terminal is left open so the user
+  // sees install output and any prompts. We can't detect completion, so a
+  // manual refresh (or the next timer tick) is what picks up the new binary.
+  function installCswap() {
+    if (installingCswap) return
+    installingCswap = true
+    Quickshell.execDetached(["omarchy", "launch", "terminal", "uv", "tool", "install", "claude-swap"])
   }
 
   function switchAccount(target) {
@@ -113,9 +125,12 @@ Panel {
       var parsed = JSON.parse(String(output || "{}"))
       root.accounts = Array.isArray(parsed.accounts) ? parsed.accounts : []
       root.loadError = parsed.error ? String(parsed.error) : ""
+      root.cswapMissing = !!parsed.cswapMissing
+      if (root.cswapMissing) root.installingCswap = false
     } catch (e) {
       root.loadError = "Failed to read cswap accounts"
       root.accounts = []
+      root.cswapMissing = false
     }
     root.hasLoaded = true
   }
@@ -264,12 +279,46 @@ Panel {
             visible: root.accounts.length === 0
             width: parent.width
             topPadding: Style.space(24)
-            text: root.loadError !== "" ? root.loadError : "No cswap accounts found.\nRun `cswap add` in a terminal first."
+            text: root.cswapMissing
+              ? "cswap isn't installed yet."
+              : (root.loadError !== "" ? root.loadError : "No cswap accounts found.\nRun `cswap add` in a terminal first.")
             color: root.dim
             font.family: root.fontFamily
             font.pixelSize: Style.font.body
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.WordWrap
+          }
+
+          // ── First run: cswap isn't installed yet ──────────────────────
+          Item {
+            visible: root.cswapMissing
+            width: parent.width
+            implicitHeight: installRow.implicitHeight + Style.spacing.md * 2
+
+            Rectangle {
+              anchors.fill: parent
+              radius: Style.cornerRadius
+              color: installMouse.containsMouse ? root.alpha(root.foreground, 0.08) : root.alpha(root.foreground, 0.03)
+            }
+
+            Text {
+              id: installRow
+              anchors.centerIn: parent
+              text: root.installingCswap ? "Installing… finish it in the terminal that opened" : "Install cswap"
+              color: root.installingCswap ? root.dim : root.foreground
+              font.family: root.fontFamily
+              font.pixelSize: Style.font.body
+              horizontalAlignment: Text.AlignHCenter
+            }
+
+            MouseArea {
+              id: installMouse
+              anchors.fill: parent
+              hoverEnabled: true
+              cursorShape: root.installingCswap ? Qt.ArrowCursor : Qt.PointingHandCursor
+              enabled: !root.installingCswap
+              onClicked: root.installCswap()
+            }
           }
 
           // ---------- Accounts ----------
