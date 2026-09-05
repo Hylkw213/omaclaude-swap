@@ -30,11 +30,14 @@ silently in the background.
 ## Install
 
 ```bash
-omarchy plugin add https://github.com/<you>/cswap-accounts.git --enable
+omarchy plugin add https://github.com/Hylkw213/omaclaude-accounts.git --enable
 ```
 
-Or clone manually into `~/.config/omarchy/plugins/cswap.accounts/` — the
-shell hot-reloads plugin code on save, no restart required.
+Or clone manually into `~/.config/omarchy/plugins/cswap.accounts/`. Editing
+QML there hot-reloads for most changes, but a bar-widget's popup panel is a
+long-lived instance — some changes (anything affecting the bar icon itself,
+or a change that doesn't visibly apply after a save) need `omarchy restart
+shell` to take effect on an already-open instance.
 
 ## Use
 
@@ -53,6 +56,16 @@ shell hot-reloads plugin code on save, no restart required.
 ```bash
 omarchy bar set cswap.accounts refreshIntervalSec 120 --json
 ```
+
+## Remove
+
+```bash
+omarchy plugin remove cswap.accounts
+```
+
+This removes the widget only — it never touches `cswap` itself or any
+account it manages. Uninstall `cswap` separately (`uv tool uninstall
+claude-swap`) if you want that gone too.
 
 ## License
 
