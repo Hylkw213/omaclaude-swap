@@ -1,11 +1,11 @@
-# cswap Accounts
+# OmaClaude Swap
 
 An [Omarchy](https://omarchy.org/) bar widget that shows every
 [cswap](https://github.com/realiti4/claude-swap)-tracked Claude Code account
 with live 5-hour session and 7-day weekly rate limits, and switches the
 active account with a click.
 
-![cswap Accounts panel](assets/preview.png)
+![OmaClaude Swap panel](assets/preview.png)
 
 ## Requirements
 

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "cswap.accounts",
-  "name": "cswap Accounts",
+  "name": "OmaClaude Swap",
   "version": "1.0.0",
   "author": "Gerben",
   "license": "MIT",
@@ -12,10 +12,10 @@
     "barWidget": "Panel.qml"
   },
   "barWidget": {
-    "displayName": "cswap Accounts",
+    "displayName": "OmaClaude Swap",
     "description": "Session/weekly rate limits for every cswap-tracked Claude Code account, with click-to-switch.",
     "category": "AI",
-    "aliases": ["cswap", "accounts", "claude-accounts"],
+    "aliases": ["cswap", "accounts", "claude-accounts", "omaclaude", "omaclaude-swap"],
     "allowMultiple": false,
     "defaults": {
       "refreshIntervalSec": 300
