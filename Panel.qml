@@ -350,6 +350,11 @@ Panel {
                 id: addAccountButton
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
+                // PanelActionButton never binds width/height to its own
+                // implicitWidth/implicitHeight, so outside a Layout (which
+                // would apply that automatically) it collapses to 0x0.
+                width: implicitWidth
+                height: implicitHeight
                 iconText: "+"
                 tooltipText: root.addingAccount ? "Waiting for you to finish in the terminal…" : "Add account"
                 foreground: root.foreground
