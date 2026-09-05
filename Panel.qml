@@ -29,6 +29,7 @@ Panel {
   property string loadError: ""
   property bool cswapMissing: false
   property bool installingCswap: false
+  property bool addingAccount: false
   property bool switchingAccount: false
   property string switchingTarget: ""
   property string switchError: ""
@@ -82,6 +83,14 @@ Panel {
     Quickshell.execDetached(["omarchy", "launch", "terminal", "uv", "tool", "install", "claude-swap"])
   }
 
+  // Same launch-a-terminal pattern for `cswap add` (OAuth login happens in
+  // the browser it opens). Works for the first account and for adding more.
+  function addAccount() {
+    if (addingAccount) return
+    addingAccount = true
+    Quickshell.execDetached(["omarchy", "launch", "terminal", "cswap", "add"])
+  }
+
   function switchAccount(target) {
     if (switchProcess.running) return
     switchError = ""
@@ -127,10 +136,12 @@ Panel {
       root.loadError = parsed.error ? String(parsed.error) : ""
       root.cswapMissing = !!parsed.cswapMissing
       if (root.cswapMissing) root.installingCswap = false
+      if (!root.cswapMissing) root.addingAccount = false
     } catch (e) {
       root.loadError = "Failed to read cswap accounts"
       root.accounts = []
       root.cswapMissing = false
+      root.addingAccount = false
     }
     root.hasLoaded = true
   }
@@ -281,7 +292,7 @@ Panel {
             topPadding: Style.space(24)
             text: root.cswapMissing
               ? "cswap isn't installed yet."
-              : (root.loadError !== "" ? root.loadError : "No cswap accounts found.\nRun `cswap add` in a terminal first.")
+              : (root.loadError !== "" ? root.loadError : "No cswap accounts yet.")
             color: root.dim
             font.family: root.fontFamily
             font.pixelSize: Style.font.body
@@ -290,35 +301,23 @@ Panel {
           }
 
           // ── First run: cswap isn't installed yet ──────────────────────
-          Item {
+          ActionRow {
             visible: root.cswapMissing
             width: parent.width
-            implicitHeight: installRow.implicitHeight + Style.spacing.md * 2
+            label: "Install cswap"
+            busyLabel: "Installing… finish it in the terminal that opened"
+            busy: root.installingCswap
+            onActivated: root.installCswap()
+          }
 
-            Rectangle {
-              anchors.fill: parent
-              radius: Style.cornerRadius
-              color: installMouse.containsMouse ? root.alpha(root.foreground, 0.08) : root.alpha(root.foreground, 0.03)
-            }
-
-            Text {
-              id: installRow
-              anchors.centerIn: parent
-              text: root.installingCswap ? "Installing… finish it in the terminal that opened" : "Install cswap"
-              color: root.installingCswap ? root.dim : root.foreground
-              font.family: root.fontFamily
-              font.pixelSize: Style.font.body
-              horizontalAlignment: Text.AlignHCenter
-            }
-
-            MouseArea {
-              id: installMouse
-              anchors.fill: parent
-              hoverEnabled: true
-              cursorShape: root.installingCswap ? Qt.ArrowCursor : Qt.PointingHandCursor
-              enabled: !root.installingCswap
-              onClicked: root.installCswap()
-            }
+          // ── cswap is installed but has no accounts registered yet ──────
+          ActionRow {
+            visible: !root.cswapMissing && root.accounts.length === 0 && root.loadError === ""
+            width: parent.width
+            label: "Add account"
+            busyLabel: "Waiting for you to finish in the terminal…"
+            busy: root.addingAccount
+            onActivated: root.addAccount()
           }
 
           // ---------- Accounts ----------
@@ -357,9 +356,58 @@ Panel {
                 account: modelData
               }
             }
+
+            ActionRow {
+              width: parent.width
+              label: "+ Add account"
+              busyLabel: "Waiting for you to finish in the terminal…"
+              busy: root.addingAccount
+              onActivated: root.addAccount()
+            }
           }
         }
       }
+    }
+  }
+
+  // A clickable "launch a terminal and run a cswap command" row, shared by
+  // the install and add-account actions. `busy` disables the click and swaps
+  // in `busyLabel` — we can't detect when the launched terminal finishes, so
+  // it clears back to `label` on the next roster refresh instead.
+  component ActionRow: Item {
+    id: actionRow
+    property string label: ""
+    property string busyLabel: ""
+    property bool busy: false
+    signal activated()
+
+    implicitHeight: actionText.implicitHeight + Style.spacing.md * 2
+
+    Rectangle {
+      anchors.fill: parent
+      radius: Style.cornerRadius
+      color: actionMouse.containsMouse ? root.alpha(root.foreground, 0.08) : root.alpha(root.foreground, 0.03)
+    }
+
+    Text {
+      id: actionText
+      anchors.centerIn: parent
+      text: actionRow.busy ? actionRow.busyLabel : actionRow.label
+      color: actionRow.busy ? root.dim : root.foreground
+      font.family: root.fontFamily
+      font.pixelSize: Style.font.body
+      horizontalAlignment: Text.AlignHCenter
+      wrapMode: Text.WordWrap
+      width: parent.width
+    }
+
+    MouseArea {
+      id: actionMouse
+      anchors.fill: parent
+      hoverEnabled: true
+      cursorShape: actionRow.busy ? Qt.ArrowCursor : Qt.PointingHandCursor
+      enabled: !actionRow.busy
+      onClicked: actionRow.activated()
     }
   }
 
