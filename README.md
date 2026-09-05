@@ -31,14 +31,11 @@ on. Don't log out of any existing account first; per claude-swap's own docs
 that can revoke its refresh token — just sign in as the new one when
 prompted.
 
-**Use a Private/Incognito window for the login.** `claude auth login` opens
-its OAuth URL in your default browser, and if that browser already has an
-active claude.com session, the consent screen goes straight through as
-*that* account — no credential prompt — so you silently re-add the account
-you already have. A private window starts with no session, so it actually
-asks you to sign in. The script prints the exact URL and this reminder
-before opening the browser, so you can copy it into a private window
-yourself if the auto-opened tab just reconnects the wrong account.
+`claude auth login` opens its OAuth URL in your normal default browser. If
+that browser already has an active claude.com session, the consent screen
+may go straight through as *that* account instead of asking for
+credentials — use claude.com's own account switcher in that tab (or sign
+out and back in as the new account) if that happens.
 
 Both terminal actions launch a script under `bin/` and wait for a keypress
 before closing, so you can see what happened; nothing installs or

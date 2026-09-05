@@ -9,23 +9,16 @@
 # first, since that can revoke its refresh token — then run `cswap add` to
 # register whatever is now active.
 #
-# `claude auth login` opens the OAuth URL in your default browser, and if
-# that browser already has an active claude.com session, the consent screen
-# goes straight through as *that* account — no login prompt at all, so you
-# silently re-add the account you already have instead of a new one. That
-# session reuse is the browser's doing, not something this script can turn
-# off. The fix is a private/incognito window: it starts with no claude.com
-# session, so the OAuth page has to ask for real credentials.
+# `claude auth login` opens the OAuth URL in your normal default browser.
+# If that browser already has an active claude.com session, the consent
+# screen goes straight through as *that* account — no login prompt — so
+# you'd silently re-add the account you already have. If that happens, use
+# claude.com's own account switcher in that tab (or sign out and back in as
+# the new account) before continuing.
 set -uo pipefail
 
 echo "Log in with the Claude account you want to add."
 echo "Don't log out of any existing account first — just sign in as the new one."
-echo
-echo "IMPORTANT: if your browser is already signed into claude.com, opening"
-echo "the link below normally will silently reconnect THAT account instead"
-echo "of asking for different credentials. Open it in a Private/Incognito"
-echo "window instead (or explicitly switch/sign out of claude.com within"
-echo "that browser tab) to actually get a login prompt for the new account."
 echo
 claude auth login
 echo
