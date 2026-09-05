@@ -1,0 +1,30 @@
+#!/bin/bash
+# Switches the active Claude Code account via cswap. Mirrors the binary
+# lookup in bin/cswap-accounts so it works whether cswap is on PATH, in
+# ~/.local/bin, or installed as a uv tool.
+set -euo pipefail
+
+target="${1:?usage: cswap-switch <account-number|email>}"
+
+find_cswap() {
+  if command -v cswap >/dev/null 2>&1; then
+    command -v cswap
+    return 0
+  fi
+  local candidates=(
+    "$HOME/.local/bin/cswap"
+    "$HOME/.local/share/uv/tools/claude-swap/bin/cswap"
+  )
+  local c
+  for c in "${candidates[@]}"; do
+    if [[ -x "$c" ]]; then
+      echo "$c"
+      return 0
+    fi
+  done
+  return 1
+}
+
+cswap_bin="$(find_cswap)" || { echo "cswap-switch: cswap binary not found" >&2; exit 1; }
+
+exec "$cswap_bin" switch "$target"

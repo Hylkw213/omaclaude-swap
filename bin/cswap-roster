@@ -1,0 +1,87 @@
+#!/usr/bin/env python3
+"""Print every cswap-tracked account as one JSON object on stdout.
+
+Standalone: this widget calls `cswap list --json` directly and reshapes
+the result. No shared usage directory, no dependency on the stock Agents
+widget or its collectors.
+"""
+
+from __future__ import annotations
+
+import json
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+
+def find_cswap_binary() -> Path | None:
+    """Locate cswap in PATH, ~/.local/bin, or uv tool install location."""
+    which = shutil.which("cswap")
+    if which:
+        return Path(which)
+
+    local_bin = Path.home() / ".local" / "bin" / "cswap"
+    if local_bin.is_file():
+        return local_bin
+
+    uv_bin = Path.home() / ".local" / "share" / "uv" / "tools" / "claude-swap" / "bin" / "cswap"
+    if uv_bin.is_file():
+        return uv_bin
+
+    return None
+
+
+def fetch_cswap_list() -> dict | None:
+    cswap = find_cswap_binary()
+    if not cswap:
+        return None
+
+    try:
+        result = subprocess.run(
+            [str(cswap), "list", "--json"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        if result.returncode != 0:
+            return None
+        return json.loads(result.stdout)
+    except (subprocess.TimeoutExpired, json.JSONDecodeError, FileNotFoundError):
+        return None
+
+
+def normalize_percent(pct: float) -> float:
+    return min(1.0, max(0.0, pct / 100.0))
+
+
+def build_account(account: dict) -> dict:
+    usage = account.get("usage", {})
+    five_hour = usage.get("fiveHour", {})
+    seven_day = usage.get("sevenDay", {})
+
+    return {
+        "number": account.get("number", 0),
+        "email": account.get("email", ""),
+        "organizationName": account.get("organizationName", ""),
+        "active": bool(account.get("active", False)),
+        "sessionPercent": normalize_percent(five_hour["pct"]) if "pct" in five_hour else -1,
+        "sessionResetsAt": five_hour.get("resetsAt", ""),
+        "weeklyPercent": normalize_percent(seven_day["pct"]) if "pct" in seven_day else -1,
+        "weeklyResetsAt": seven_day.get("resetsAt", ""),
+    }
+
+
+def main() -> int:
+    data = fetch_cswap_list()
+    if not data:
+        print(json.dumps({"accounts": [], "error": "cswap not found or failed"}))
+        return 0
+
+    accounts = [build_account(a) for a in data.get("accounts", [])]
+    print(json.dumps({"accounts": accounts}))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

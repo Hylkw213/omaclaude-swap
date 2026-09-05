@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "cswap.accounts",
+  "name": "cswap Accounts",
+  "version": "1.0.0",
+  "author": "Gerben",
+  "license": "MIT",
+  "description": "Shows every cswap-tracked Claude Code account with live rate limits, and switches between them with a click.",
+  "kinds": ["bar-widget"],
+  "activation": "on-demand",
+  "entryPoints": {
+    "barWidget": "Panel.qml"
+  },
+  "barWidget": {
+    "displayName": "cswap Accounts",
+    "description": "Session/weekly rate limits for every cswap-tracked Claude Code account, with click-to-switch.",
+    "category": "AI",
+    "aliases": ["cswap", "accounts", "claude-accounts"],
+    "allowMultiple": false,
+    "defaults": {
+      "refreshIntervalSec": 300
+    },
+    "schema": [
+      { "key": "refreshIntervalSec", "type": "integer", "label": "Refresh interval (seconds)", "min": 30, "max": 3600, "step": 30, "defaultValue": 300 }
+    ]
+  }
+}
