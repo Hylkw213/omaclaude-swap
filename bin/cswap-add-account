@@ -1,0 +1,21 @@
+#!/bin/bash
+# `cswap add` only snapshots whichever account is CURRENTLY logged into the
+# `claude` CLI — it does not open a login flow itself. Running it alone (as
+# this plugin used to) just re-registers the account you're already on and
+# exits instantly, which looked like the terminal flashing open and closing.
+#
+# The real flow, per claude-swap's own docs: log into Claude Code as the
+# account you want to add first — WITHOUT logging out of any existing one
+# first, since that can revoke its refresh token — then run `cswap add` to
+# register whatever is now active.
+set -uo pipefail
+
+echo "Log in with the Claude account you want to add."
+echo "Don't log out of any existing account first — just sign in as the new one."
+echo
+claude auth login
+echo
+echo "Registering with cswap..."
+cswap add
+echo
+read -r -p "Press Enter to close..." _

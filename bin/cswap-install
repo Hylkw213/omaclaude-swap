@@ -1,0 +1,8 @@
+#!/bin/bash
+# Installs claude-swap, then waits for a keypress so this terminal (opened
+# just for this one command) stays up long enough to read the result.
+set -uo pipefail
+
+uv tool install claude-swap
+echo
+read -r -p "Press Enter to close..." _

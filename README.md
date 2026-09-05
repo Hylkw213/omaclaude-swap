@@ -21,11 +21,17 @@ walks you through it.
 
 If `cswap` isn't installed, the panel shows an **Install cswap** row —
 click it and Omarchy opens a terminal running `uv tool install claude-swap`.
-Once installed but before any account is registered, an **Add account** row
-opens a terminal running `cswap add` (this is also how you add a second,
-third, etc. account later — it stays pinned at the bottom of the account
-list). Both just launch a terminal; nothing installs or authenticates
-silently in the background.
+Once installed, a **+** button next to "ACCOUNTS" (or, before any account is
+registered, an **Add account** row) opens a terminal that runs
+`claude auth login` — so the browser OAuth for the account you want to add
+actually happens — then `cswap add` to register whatever's now signed in.
+`cswap add` alone only snapshots the currently-logged-in session, so calling
+it without a fresh login first just re-registers the account you're already
+on. Don't log out of any existing account first; per claude-swap's own docs
+that can revoke its refresh token — just sign in as the new one when
+prompted. Both terminal actions launch a script under `bin/` and wait for a
+keypress before closing, so you can see what happened; nothing installs or
+authenticates silently in the background.
 
 ## Install
 

@@ -73,22 +73,26 @@ Panel {
     if (!listProcess.running) listProcess.running = true
   }
 
-  // Opens a terminal running the install command, same pattern OmaProton VPN
-  // uses for its missing-CLI state — the terminal is left open so the user
-  // sees install output and any prompts. We can't detect completion, so a
-  // manual refresh (or the next timer tick) is what picks up the new binary.
+  // Opens a terminal running bin/cswap-install, same pattern OmaProton VPN
+  // uses for its missing-CLI state. The script pauses for a keypress at the
+  // end so the terminal doesn't flash shut before install output is
+  // readable. We can't detect completion, so a manual refresh (or the next
+  // timer tick) is what picks up the new binary.
   function installCswap() {
     if (installingCswap) return
     installingCswap = true
-    Quickshell.execDetached(["omarchy", "launch", "terminal", "uv", "tool", "install", "claude-swap"])
+    Quickshell.execDetached(["omarchy", "launch", "terminal", "bash", root.pluginDir + "/bin/cswap-install"])
   }
 
-  // Same launch-a-terminal pattern for `cswap add` (OAuth login happens in
-  // the browser it opens). Works for the first account and for adding more.
+  // Opens a terminal running bin/cswap-add-account, which runs
+  // `claude auth login` (so the browser OAuth actually happens) before
+  // `cswap add` — `cswap add` alone only snapshots whichever account is
+  // already logged in, so calling it without a fresh login first just
+  // re-registers the current account and exits immediately.
   function addAccount() {
     if (addingAccount) return
     addingAccount = true
-    Quickshell.execDetached(["omarchy", "launch", "terminal", "cswap", "add"])
+    Quickshell.execDetached(["omarchy", "launch", "terminal", "bash", root.pluginDir + "/bin/cswap-add-account"])
   }
 
   function switchAccount(target) {
