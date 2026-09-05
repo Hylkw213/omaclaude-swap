@@ -335,6 +335,7 @@ Panel {
             Item {
               width: parent.width
               implicitHeight: Math.max(accountsHeader.implicitHeight, addAccountButton.implicitHeight)
+              height: implicitHeight
 
               PanelSectionHeader {
                 id: accountsHeader

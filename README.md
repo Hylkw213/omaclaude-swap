@@ -5,6 +5,8 @@ An [Omarchy](https://omarchy.org/) bar widget that shows every
 with live 5-hour session and 7-day weekly rate limits, and switches the
 active account with a click.
 
+![cswap Accounts panel](assets/preview.png)
+
 ## Requirements
 
 This widget is a display/control surface for **[claude-swap](https://github.com/realiti4/claude-swap)**
