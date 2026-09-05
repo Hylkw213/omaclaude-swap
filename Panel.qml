@@ -332,10 +332,30 @@ Panel {
             width: parent.width
             spacing: Style.space(10)
 
-            PanelSectionHeader {
-              text: "ACCOUNTS"
-              foreground: root.foreground
-              fontFamily: root.fontFamily
+            Item {
+              width: parent.width
+              implicitHeight: Math.max(accountsHeader.implicitHeight, addAccountButton.implicitHeight)
+
+              PanelSectionHeader {
+                id: accountsHeader
+                anchors.left: parent.left
+                anchors.verticalCenter: parent.verticalCenter
+                text: "ACCOUNTS"
+                foreground: root.foreground
+                fontFamily: root.fontFamily
+              }
+
+              PanelActionButton {
+                id: addAccountButton
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                iconText: "+"
+                tooltipText: root.addingAccount ? "Waiting for you to finish in the terminal…" : "Add account"
+                foreground: root.foreground
+                fontFamily: root.fontFamily
+                enabled: !root.addingAccount
+                onClicked: root.addAccount()
+              }
             }
 
             Text {
@@ -355,14 +375,6 @@ Panel {
                 width: accountsSection.width
                 account: modelData
               }
-            }
-
-            ActionRow {
-              width: parent.width
-              label: "+ Add account"
-              busyLabel: "Waiting for you to finish in the terminal…"
-              busy: root.addingAccount
-              onActivated: root.addAccount()
             }
           }
         }
