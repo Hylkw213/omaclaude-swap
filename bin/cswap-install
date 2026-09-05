@@ -1,8 +1,24 @@
 #!/bin/bash
 # Installs claude-swap, then waits for a keypress so this terminal (opened
 # just for this one command) stays up long enough to read the result.
+#
+# `uv` itself isn't guaranteed to be there — confirmed live on a machine
+# that had it removed: this failed with "uv: command not found" instead of
+# installing anything. `uv` ships as a plain Arch package, so pull it in
+# with Omarchy's own installer first when it's missing.
 set -uo pipefail
 
-uv tool install claude-swap
+if ! command -v uv >/dev/null 2>&1; then
+  echo "uv isn't installed — installing it first (this may ask for your password)..."
+  omarchy pkg add uv
+  echo
+fi
+
+if command -v uv >/dev/null 2>&1; then
+  uv tool install claude-swap
+else
+  echo "Couldn't find or install uv. Install it yourself, then run:"
+  echo "  uv tool install claude-swap"
+fi
 echo
 read -r -p "Press Enter to close..." _

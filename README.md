@@ -21,8 +21,11 @@ walks you through it.
 
 If `cswap` isn't installed, the panel shows an **Install cswap** row —
 click it and Omarchy opens a terminal running `uv tool install claude-swap`.
-Once installed, a **+** button next to "ACCOUNTS" (or, before any account is
-registered, an **Add account** row) opens a terminal that runs
+If `uv` itself isn't installed either (confirmed on a fresh machine: this
+used to just fail with "uv: command not found"), it's installed first via
+`omarchy pkg add uv`, which may prompt for your password right there in the
+terminal. Once installed, a **+** button next to "ACCOUNTS" (or, before any
+account is registered, an **Add account** row) opens a terminal that runs
 `claude auth login` — so the browser OAuth for the account you want to add
 actually happens — then `cswap add` to register whatever's now signed in.
 `cswap add` alone only snapshots the currently-logged-in session, so calling
