@@ -1,7 +1,7 @@
 # cswap Accounts
 
 An [Omarchy](https://omarchy.org/) bar widget that shows every
-[cswap](https://github.com/search?q=claude-swap)-tracked Claude Code account
+[cswap](https://github.com/realiti4/claude-swap)-tracked Claude Code account
 with live 5-hour session and 7-day weekly rate limits, and switches the
 active account with a click.
 
@@ -9,12 +9,23 @@ active account with a click.
 
 ## Requirements
 
+This widget is a display/control surface for **[claude-swap](https://github.com/realiti4/claude-swap)**
+(CLI: `cswap`) — it does not manage accounts itself and has nothing to show
+without it.
+
 - Omarchy with the shell plugin system (`omarchy plugin` commands available)
-- [`cswap`](https://github.com/search?q=claude-swap) (`claude-swap`) installed
-  and on `PATH`, in `~/.local/bin`, or as a `uv` tool — this widget shells out
-  to `cswap list --json` and `cswap switch <target>` and does nothing on its
-  own without it
+- [`cswap`](https://github.com/realiti4/claude-swap) installed and on `PATH`,
+  in `~/.local/bin`, or as a `uv` tool:
+  ```bash
+  uv tool install claude-swap
+  cswap add        # register at least one account
+  ```
+  This widget shells out to `cswap list --json` and `cswap switch <target>`.
 - `python3` (used by `bin/cswap-roster` to reshape `cswap`'s output)
+
+If `cswap` isn't installed yet, or has no accounts registered, the panel
+says so in place rather than failing silently — install `cswap`, run
+`cswap add`, and it picks the accounts up on the next refresh.
 
 ## Install
 

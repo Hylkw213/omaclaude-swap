@@ -25,6 +25,7 @@ Panel {
   readonly property string fontFamily: bar ? bar.fontFamily : Style.font.family
 
   property var accounts: []
+  property bool hasLoaded: false
   property string loadError: ""
   property bool switchingAccount: false
   property string switchingTarget: ""
@@ -84,7 +85,11 @@ Panel {
 
   property int refreshIntervalSec: Math.max(30, Number(setting("refreshIntervalSec", 300)))
 
-  visible: accounts.length > 0
+  // Stay hidden until the first `cswap list` attempt resolves (avoids a
+  // startup flash), but once loaded, stay visible even with zero accounts
+  // or a load error — that's exactly when the panel's onboarding text
+  // ("run `cswap add`") needs to be reachable by clicking the bar icon.
+  visible: hasLoaded
   implicitWidth: button.implicitWidth
   implicitHeight: button.implicitHeight
 
@@ -112,6 +117,7 @@ Panel {
       root.loadError = "Failed to read cswap accounts"
       root.accounts = []
     }
+    root.hasLoaded = true
   }
 
   Process {

@@ -32,10 +32,10 @@ def find_cswap_binary() -> Path | None:
     return None
 
 
-def fetch_cswap_list() -> dict | None:
+def fetch_cswap_list() -> tuple[dict | None, str]:
     cswap = find_cswap_binary()
     if not cswap:
-        return None
+        return None, "cswap not found. Install: uv tool install claude-swap"
 
     try:
         result = subprocess.run(
@@ -45,10 +45,12 @@ def fetch_cswap_list() -> dict | None:
             timeout=10,
         )
         if result.returncode != 0:
-            return None
-        return json.loads(result.stdout)
-    except (subprocess.TimeoutExpired, json.JSONDecodeError, FileNotFoundError):
-        return None
+            return None, "cswap list failed"
+        return json.loads(result.stdout), ""
+    except subprocess.TimeoutExpired:
+        return None, "cswap list timed out"
+    except (json.JSONDecodeError, FileNotFoundError):
+        return None, "cswap list returned unreadable output"
 
 
 def normalize_percent(pct: float) -> float:
@@ -73,9 +75,9 @@ def build_account(account: dict) -> dict:
 
 
 def main() -> int:
-    data = fetch_cswap_list()
+    data, error = fetch_cswap_list()
     if not data:
-        print(json.dumps({"accounts": [], "error": "cswap not found or failed"}))
+        print(json.dumps({"accounts": [], "error": error}))
         return 0
 
     accounts = [build_account(a) for a in data.get("accounts", [])]
