@@ -28,6 +28,12 @@ Panel {
   property bool hasLoaded: false
   property string loadError: ""
   property bool cswapMissing: false
+  // How many times in a row `cswap list` has come back with zero accounts
+  // and no error. A lone result like that is more likely a startup/resume
+  // race (cswap's own state not settled yet) than a genuinely empty
+  // roster, so we don't trust it until it repeats a few times in a row.
+  property int emptyStreak: 0
+  readonly property int emptyConfirmations: 3
   property bool installingCswap: false
   property bool addingAccount: false
   property bool switchingAccount: false
@@ -134,20 +140,51 @@ Panel {
   }
 
   function applyRoster(output) {
+    var accounts = []
+    var error = ""
+    var missing = false
     try {
       var parsed = JSON.parse(String(output || "{}"))
-      root.accounts = Array.isArray(parsed.accounts) ? parsed.accounts : []
-      root.loadError = parsed.error ? String(parsed.error) : ""
-      root.cswapMissing = !!parsed.cswapMissing
-      if (root.cswapMissing) root.installingCswap = false
-      if (!root.cswapMissing) root.addingAccount = false
+      accounts = Array.isArray(parsed.accounts) ? parsed.accounts : []
+      error = parsed.error ? String(parsed.error) : ""
+      missing = !!parsed.cswapMissing
     } catch (e) {
-      root.loadError = "Failed to read cswap accounts"
-      root.accounts = []
-      root.cswapMissing = false
-      root.addingAccount = false
+      error = "Failed to read cswap accounts"
     }
+
+    // "Zero accounts, no error, cswap found" is exactly the shape a
+    // startup/resume race produces (cswap ran before its own state was
+    // ready). Don't let a single one of these wipe out accounts we
+    // already know about and flash the "Add account" prompt -- confirm it
+    // a few times, quickly, before believing it.
+    var suspiciouslyEmpty = accounts.length === 0 && error === "" && !missing
+    if (suspiciouslyEmpty) {
+      root.emptyStreak++
+      if (root.emptyStreak < root.emptyConfirmations) {
+        quickRetryTimer.restart()
+        return
+      }
+    } else {
+      root.emptyStreak = 0
+    }
+
+    root.accounts = accounts
+    root.loadError = error
+    root.cswapMissing = missing
+    if (root.cswapMissing) root.installingCswap = false
+    if (!root.cswapMissing) root.addingAccount = false
     root.hasLoaded = true
+  }
+
+  // Fires shortly after a suspiciously-empty roster result, to re-check
+  // before we believe it (see applyRoster). Deliberately shorter than the
+  // normal refresh interval.
+  Timer {
+    id: quickRetryTimer
+    interval: 1500
+    running: false
+    repeat: false
+    onTriggered: root.refreshNow()
   }
 
   Process {
